@@ -1,0 +1,2125 @@
+# MASTER BUILD PROMPT — AI SOFTWARE COMPANY OS
+
+## 1. Product Vision
+
+Build a production-ready web application called **AI Company OS**.
+
+The application is a virtual software development company where multiple AI agents behave like employees.
+
+The human user acts as the **CEO / CTO / Manager**.
+
+The user can:
+
+* Create companies/organizations
+* Create projects
+* Hire/add AI employees
+* Define each employee's role
+* Configure the AI model used by each employee
+* Define responsibilities and permissions
+* Define workflows
+* Create projects and goals
+* Create sprints
+* Create tasks
+* Assign tasks to AI employees
+* Allow agents to automatically assign work to other agents
+* Allow agents to wait for outputs from other agents
+* Allow agents to follow up when another agent is late
+* Allow agents to retry failed work
+* Allow agents to escalate blockers to the human
+* Monitor all agents live
+* Monitor sprint delivery
+* See task progress
+* See agent activity
+* See errors
+* Receive alerts
+* Approve/reject important actions
+* Review code and pull requests
+* See project health
+* See predicted delivery dates
+
+The application should feel like managing a real software company with employees, managers, departments, projects, sprints, tasks, meetings, communication, performance and escalation.
+
+---
+
+# 2. Core Principle
+
+The system must be **event-driven and state-driven**.
+
+Agents must NOT operate as isolated chatbots.
+
+Every agent is an employee inside an organization.
+
+Every agent has:
+
+* Employee ID
+* Name
+* Role
+* Department
+* Description
+* AI model
+* System instructions
+* Skills
+* Permissions
+* Working status
+* Current task
+* Current project
+* Current sprint
+* Performance history
+* Activity history
+* Token/cost usage
+* Success/failure statistics
+
+Agents communicate through the central **Orchestrator**.
+
+Never allow arbitrary uncontrolled agent-to-agent communication.
+
+All important actions must be recorded.
+
+---
+
+# 3. Example Company
+
+The default demo company should contain:
+
+## CEO
+
+Human user.
+
+## AI Employees
+
+### 1. Alex
+
+Role: Project Manager
+
+Responsibilities:
+
+* Understand project requirements
+* Break requirements into tasks
+* Create sprint plans
+* Estimate work
+* Assign work
+* Monitor progress
+* Follow up with agents
+* Detect blockers
+* Escalate serious blockers
+* Track deadlines
+
+### 2. Sarah
+
+Role: UI/UX Designer
+
+Responsibilities:
+
+* User flows
+* Wireframes
+* UI specifications
+* Design system
+* Screen definitions
+
+### 3. David
+
+Role: Frontend Developer
+
+Responsibilities:
+
+* React/Next.js
+* Components
+* Pages
+* Frontend integration
+* UI implementation
+
+### 4. Michael
+
+Role: Backend Developer
+
+Responsibilities:
+
+* APIs
+* Business logic
+* Authentication
+* Backend services
+
+### 5. Emma
+
+Role: Database Engineer
+
+Responsibilities:
+
+* Database schema
+* Migrations
+* Indexes
+* Queries
+* Data integrity
+
+### 6. Daniel
+
+Role: QA Engineer
+
+Responsibilities:
+
+* Test plans
+* Unit tests
+* Integration tests
+* E2E tests
+* Regression testing
+
+### 7. Olivia
+
+Role: Security Engineer
+
+Responsibilities:
+
+* Security review
+* Authentication review
+* Authorization review
+* Vulnerability detection
+
+### 8. James
+
+Role: DevOps Engineer
+
+Responsibilities:
+
+* Docker
+* CI/CD
+* Infrastructure
+* Deployment
+* Monitoring
+
+### 9. Code Review Agent
+
+Responsibilities:
+
+* Review pull requests
+* Check architecture
+* Check quality
+* Check security
+* Check tests
+
+The user must be able to create additional employees from the GUI.
+
+---
+
+# 4. Agent Hiring System
+
+Create an "AI Employees" section.
+
+The user should be able to click:
+
+**Hire AI Employee**
+
+Form:
+
+* Employee name
+* Role
+* Department
+* Job description
+* Responsibilities
+* Skills
+* AI provider
+* AI model
+* Temperature
+* System prompt
+* Maximum token budget
+* Maximum execution time
+* Allowed tools
+* Allowed repositories
+* Allowed projects
+* Permission level
+* Manager
+* Working hours
+* Escalation rules
+
+Example:
+
+```text
+Name:
+Michael
+
+Role:
+Backend Developer
+
+Department:
+Engineering
+
+Model:
+GPT / Claude / Gemini
+
+Responsibilities:
+- Build APIs
+- Write backend code
+- Write tests
+- Fix bugs
+
+Manager:
+Alex — Project Manager
+
+Permissions:
+- Read repository
+- Write repository
+- Create branch
+- Create PR
+- Run tests
+
+Escalate:
+- Authentication failure
+- Production issue
+- More than 3 failed attempts
+- Blocked for more than 30 minutes
+```
+
+After saving, the employee appears in the organization.
+
+---
+
+# 5. Employee Status
+
+Every employee must have a real-time status.
+
+Possible states:
+
+```text
+IDLE
+ASSIGNED
+STARTING
+ANALYZING
+WORKING
+WAITING
+WAITING_FOR_AGENT
+TESTING
+REVIEWING
+BLOCKED
+FAILED
+ESCALATED
+COMPLETED
+CANCELLED
+OFFLINE
+```
+
+Show these states in the dashboard.
+
+Example:
+
+```text
+Michael
+Backend Developer
+
+🟢 WORKING
+
+Current Task:
+TASK-142 — Implement Ticket API
+
+Progress:
+78%
+
+Working for:
+42 minutes
+
+Waiting:
+No
+
+Last activity:
+Added ticket validation
+```
+
+---
+
+# 6. Project Management
+
+Allow users to create:
+
+```text
+Company
+ └── Project
+      └── Epic
+           └── Feature
+                └── Task
+                     └── Subtask
+```
+
+Each project contains:
+
+* Name
+* Description
+* Goals
+* Requirements
+* Technology stack
+* Repository
+* Environments
+* Team
+* Agents
+* Workflows
+* Sprints
+* Tasks
+* Releases
+* Deployments
+
+---
+
+# 7. Natural Language Project Creation
+
+The user should be able to create a project using natural language.
+
+Example:
+
+> Build a customer support platform with customer login, agent login, ticket management, SLA tracking, notifications, dashboard, reports and admin controls.
+
+The PM Agent should automatically:
+
+1. Analyze requirements
+2. Identify missing information
+3. Ask questions if necessary
+4. Create architecture proposal
+5. Create epics
+6. Create features
+7. Create tasks
+8. Estimate tasks
+9. Identify dependencies
+10. Create initial sprint
+11. Assign agents
+12. Start execution
+
+Do NOT immediately execute destructive or production-changing operations without approval.
+
+---
+
+# 8. Task Engine
+
+Every task must contain:
+
+```text
+Task ID
+Project
+Epic
+Feature
+Sprint
+Title
+Description
+Acceptance Criteria
+Priority
+Status
+Assigned Agent
+Created By
+Dependencies
+Estimated Time
+Actual Time
+Deadline
+Started At
+Completed At
+Retry Count
+Blocked Reason
+Failure Reason
+Required Output
+Input Context
+Parent Task
+Child Tasks
+Created At
+Updated At
+```
+
+Statuses:
+
+```text
+BACKLOG
+READY
+ASSIGNED
+IN_PROGRESS
+WAITING
+BLOCKED
+IN_REVIEW
+CHANGES_REQUESTED
+TESTING
+FAILED
+COMPLETED
+CANCELLED
+```
+
+---
+
+# 9. Dependency-Based Workflow
+
+This is a critical feature.
+
+A task can depend on another task.
+
+Example:
+
+```text
+TASK-101
+Database schema
+        ↓
+TASK-102
+Backend API
+        ↓
+TASK-103
+Frontend UI
+        ↓
+TASK-104
+Integration
+        ↓
+TASK-105
+QA
+        ↓
+TASK-106
+Security Review
+        ↓
+TASK-107
+Deployment
+```
+
+TASK-103 must NOT start until TASK-102 produces its required output.
+
+The system should automatically detect when dependencies are satisfied.
+
+When TASK-102 completes:
+
+```text
+Backend Agent
+      ↓
+Output generated
+      ↓
+Orchestrator validates output
+      ↓
+Dependency satisfied
+      ↓
+Frontend Agent receives TASK-103
+      ↓
+Frontend Agent starts
+```
+
+---
+
+# 10. Agent-to-Agent Handoff
+
+Agents must be able to produce structured outputs.
+
+Example:
+
+Backend Agent output:
+
+```json
+{
+  "status": "completed",
+  "api_ready": true,
+  "endpoints": [
+    "POST /api/tickets",
+    "GET /api/tickets",
+    "PATCH /api/tickets/:id"
+  ],
+  "branch": "agent/backend-ticket-api",
+  "pull_request": "PR-142",
+  "tests_passed": 24,
+  "notes": "Ticket API ready for frontend integration"
+}
+```
+
+The orchestrator reads this output.
+
+Then it triggers:
+
+```text
+Frontend Agent
+```
+
+with:
+
+```text
+Backend API is ready.
+
+Available endpoints:
+...
+
+Pull Request:
+...
+
+Implement the frontend integration.
+```
+
+This must happen automatically.
+
+---
+
+# 11. Follow-Up System
+
+Agents must be able to follow up with other agents.
+
+Example:
+
+```text
+Frontend Agent
+waiting for Backend Agent
+```
+
+The orchestrator tracks:
+
+```text
+waiting_since
+expected_completion
+```
+
+If backend exceeds the expected time:
+
+```text
+PM Agent
+   ↓
+Follow-up message
+   ↓
+Backend Agent
+```
+
+Example:
+
+> Backend task has exceeded estimated completion time by 25 minutes. Please provide status and expected completion time.
+
+If no response:
+
+```text
+WAITING
+ ↓
+FOLLOW_UP
+ ↓
+ESCALATE
+```
+
+---
+
+# 12. Blocker Management
+
+If an agent encounters a blocker:
+
+```text
+Backend Agent
+      ↓
+BLOCKED
+      ↓
+Create Blocker
+```
+
+Blocker:
+
+```text
+BLOCKER-21
+
+Task:
+AUTH-124
+
+Reason:
+Required database migration failed.
+
+Severity:
+HIGH
+
+Owner:
+Database Agent
+
+Status:
+OPEN
+```
+
+The orchestrator determines who can solve it.
+
+Example:
+
+```text
+Backend Agent
+     ↓
+Database Agent
+     ↓
+Fix migration
+     ↓
+Backend Agent resumes
+```
+
+If nobody can solve it:
+
+```text
+BLOCKED
+ ↓
+ESCALATE TO HUMAN
+```
+
+---
+
+# 13. Human Escalation
+
+The user must receive an alert when:
+
+* Agent fails repeatedly
+* Agent is blocked
+* Deadline is at risk
+* Production deployment requires approval
+* Security vulnerability is detected
+* Agent requests permission
+* Agent cannot resolve dependency
+* Agent requires missing information
+* Cost limit is reached
+* API/model fails
+* Git conflict cannot be resolved
+
+Notification examples:
+
+```text
+🚨 HIGH PRIORITY
+
+Backend Agent is blocked.
+
+Task:
+AUTH-124
+
+Reason:
+Database migration failed 3 times.
+
+Action required.
+
+[Open Task]
+[Assign Agent]
+[Retry]
+[Cancel]
+```
+
+The user should be able to respond from the notification.
+
+---
+
+# 14. Approval System
+
+Create configurable approval policies.
+
+Examples:
+
+```text
+Code changes:
+Automatic
+
+Pull Request:
+Automatic review required
+
+Production deployment:
+Human approval required
+
+Database destructive migration:
+Human approval required
+
+Security changes:
+Human approval required
+
+Delete project:
+Human approval required
+```
+
+Allow policies to be configured per project.
+
+---
+
+# 15. Workflow Builder
+
+Create a visual workflow builder.
+
+The user should be able to create workflows using nodes.
+
+Example:
+
+```text
+Requirement
+     ↓
+PM Agent
+     ↓
+Design Agent
+     ↓
+Database Agent
+     ↓
+Backend Agent
+     ↓
+Frontend Agent
+     ↓
+QA Agent
+     ↓
+Security Agent
+     ↓
+Code Review
+     ↓
+Human Approval
+     ↓
+DevOps
+     ↓
+Production
+```
+
+Nodes:
+
+```text
+Agent
+Task
+Condition
+Approval
+Wait
+Parallel
+Join
+Retry
+Escalate
+Notification
+Webhook
+Git Action
+Test
+Deployment
+```
+
+Conditions:
+
+```text
+IF tests_passed
+    → continue
+
+IF tests_failed
+    → developer
+
+IF retry_count > 3
+    → human
+
+IF security_severity == critical
+    → block deployment
+```
+
+The workflow must be editable through GUI.
+
+---
+
+# 16. Parallel Agent Execution
+
+The orchestrator must support parallel work.
+
+Example:
+
+```text
+                PM
+                 │
+        ┌────────┼────────┐
+        ↓        ↓        ↓
+      UI/UX     DB      Backend
+        │        │        │
+        └────────┼────────┘
+                 ↓
+              Frontend
+                 ↓
+                QA
+```
+
+UI, DB and Backend can work simultaneously if dependencies allow.
+
+Do not unnecessarily serialize independent tasks.
+
+---
+
+# 17. Sprint System
+
+Implement full sprint management.
+
+Sprint contains:
+
+```text
+Name
+Goal
+Start Date
+End Date
+Velocity
+Capacity
+Tasks
+Agents
+Status
+```
+
+Statuses:
+
+```text
+PLANNED
+ACTIVE
+COMPLETED
+CANCELLED
+```
+
+Sprint board:
+
+```text
+BACKLOG
+TODO
+IN PROGRESS
+WAITING
+BLOCKED
+REVIEW
+TESTING
+DONE
+```
+
+Support drag-and-drop.
+
+---
+
+# 18. Sprint Delivery Dashboard
+
+Show:
+
+```text
+Sprint 12
+
+Completion:
+68%
+
+Tasks:
+42
+
+Completed:
+29
+
+In Progress:
+8
+
+Blocked:
+3
+
+Remaining:
+10
+```
+
+Show:
+
+```text
+Estimated work
+Actual work
+Remaining work
+Velocity
+Burn-down
+Burn-up
+Predicted completion
+Deadline
+```
+
+Prediction:
+
+```text
+🟢 ON TRACK
+
+Expected:
+September 6
+
+Deadline:
+September 7
+```
+
+If at risk:
+
+```text
+🔴 AT RISK
+
+Expected:
+September 9
+
+Deadline:
+September 7
+
+Potential delay:
+2 days
+```
+
+---
+
+# 19. Executive Dashboard
+
+The home page should feel like a CEO dashboard.
+
+Display:
+
+```text
+ACTIVE PROJECTS
+ACTIVE AGENTS
+ACTIVE SPRINT
+TASKS
+COMPLETION %
+BLOCKED TASKS
+FAILED TASKS
+DELIVERY HEALTH
+AI COST
+TOKEN USAGE
+DEPLOYMENTS
+OPEN INCIDENTS
+```
+
+Sections:
+
+### Agent activity
+
+```text
+🟢 Backend Agent
+Implementing ticket API
+
+🟢 Frontend Agent
+Building ticket dashboard
+
+🟡 QA Agent
+Waiting for backend
+
+🔴 Database Agent
+Migration failed
+```
+
+### Project health
+
+```text
+Customer Support Platform
+
+Progress: 71%
+
+Schedule: 🟢
+
+Quality: 🟢
+
+Security: 🟢
+
+Cost: 🟡
+
+Risk: LOW
+```
+
+---
+
+# 20. Live Activity Feed
+
+Every action must generate an activity event.
+
+Examples:
+
+```text
+20:42 PM Agent created TASK-142
+
+20:43 Backend Agent started TASK-142
+
+20:46 Backend Agent modified ticket_service.py
+
+20:48 Backend Agent ran tests
+
+20:49 24 tests passed
+
+20:50 Backend Agent created PR #142
+
+20:51 Code Review Agent started review
+
+20:53 Code Review Agent approved PR
+
+20:54 Frontend Agent received dependency
+
+20:55 Frontend Agent started TASK-143
+```
+
+The feed must update live using WebSockets or Server-Sent Events.
+
+---
+
+# 21. Agent Detail Page
+
+Clicking an agent should show:
+
+```text
+Agent Profile
+Current Task
+Current Project
+Current Sprint
+Status
+Progress
+Activity
+Messages
+Tasks
+Completed Work
+Failed Work
+Performance
+Cost
+Token Usage
+Execution Time
+Git Activity
+Pull Requests
+Errors
+```
+
+Also show a live terminal/log view.
+
+Example:
+
+```text
+LIVE EXECUTION
+
+$ git checkout agent/backend-ticket-api
+
+$ npm test
+
+Running 24 tests...
+
+✓ ticket creation
+✓ ticket update
+✓ ticket validation
+✓ authentication
+
+24 passed
+
+$ git commit -m "Implement ticket API"
+```
+
+---
+
+# 22. Agent Communication Center
+
+Create an internal communication page.
+
+Show:
+
+```text
+PM Agent → Backend Agent
+
+"Please implement ticket API."
+
+Backend Agent → PM Agent
+
+"API completed. PR #142 ready."
+
+PM Agent → QA Agent
+
+"Please test PR #142."
+
+QA Agent → Backend Agent
+
+"Test failed: invalid ticket status."
+
+Backend Agent → QA Agent
+
+"Fix applied."
+
+QA Agent → PM Agent
+
+"All tests passed."
+```
+
+Every message should be persisted.
+
+---
+
+# 23. AI Agent Context
+
+Agents must receive only the context they need.
+
+Context should include:
+
+```text
+Company rules
+Project rules
+Agent role
+Task description
+Acceptance criteria
+Dependencies
+Previous outputs
+Relevant files
+Relevant messages
+Relevant test results
+Relevant Git information
+```
+
+Do not send the entire project history to every agent unnecessarily.
+
+Implement context management and summarization.
+
+---
+
+# 24. Memory
+
+Implement three levels:
+
+### Organization memory
+
+Company-wide policies.
+
+### Project memory
+
+Architecture, decisions, requirements.
+
+### Task memory
+
+Task-specific information and agent outputs.
+
+Agents should be able to retrieve relevant memory.
+
+---
+
+# 25. Git Integration
+
+Integrate GitHub/GitLab.
+
+Support:
+
+```text
+Repositories
+Branches
+Commits
+Pull Requests
+Reviews
+Issues
+Actions
+Builds
+```
+
+Each coding agent should work in an isolated workspace.
+
+Recommended:
+
+```text
+/workspaces/
+   project-1/
+      agent-backend/
+      agent-frontend/
+      agent-qa/
+```
+
+or isolated Docker containers/worktrees.
+
+Agents must never directly overwrite another active agent's workspace.
+
+---
+
+# 26. CI/CD
+
+When code is submitted:
+
+```text
+Agent
+ ↓
+Commit
+ ↓
+Pull Request
+ ↓
+CI
+ ↓
+Tests
+ ↓
+Code Review
+ ↓
+Security Scan
+ ↓
+Approval
+ ↓
+Merge
+ ↓
+Build
+ ↓
+Deploy
+```
+
+The workflow must be configurable.
+
+---
+
+# 27. Error Handling
+
+Every agent execution must have:
+
+```text
+run_id
+agent_id
+task_id
+start_time
+end_time
+status
+error
+retry_count
+token_usage
+cost
+logs
+```
+
+If execution fails:
+
+```text
+FAILED
+ ↓
+Analyze error
+ ↓
+Retry if allowed
+ ↓
+If retry successful → continue
+ ↓
+If repeated failure → escalate
+```
+
+Maximum retries should be configurable.
+
+---
+
+# 28. Observability
+
+Build complete observability.
+
+Track:
+
+```text
+Agent execution
+Task execution
+Workflow execution
+API calls
+Model calls
+Tokens
+Costs
+Latency
+Errors
+Retries
+Tool calls
+Git operations
+Tests
+Deployments
+```
+
+Provide logs and filtering.
+
+---
+
+# 29. Cost Dashboard
+
+Show:
+
+```text
+Today
+$12.42
+
+This Sprint
+$84.20
+
+This Project
+$142.31
+
+By Agent:
+
+PM             $12
+Frontend       $28
+Backend        $41
+QA             $19
+DevOps         $8
+```
+
+Allow budget limits.
+
+Example:
+
+```text
+Project budget:
+$500
+
+Used:
+$312
+
+Remaining:
+$188
+```
+
+If budget reaches threshold:
+
+```text
+⚠️ AI budget 80% consumed
+```
+
+---
+
+# 30. Security
+
+Implement:
+
+* Authentication
+* RBAC
+* Organization isolation
+* Project permissions
+* Agent permissions
+* Tool permissions
+* Secret management
+* Audit logs
+* Encryption
+* Rate limiting
+* Input validation
+* Secure sandboxing
+
+Agents must run in isolated environments.
+
+Never expose API keys directly to agent prompts.
+
+---
+
+# 31. Human Control
+
+The human must always be able to:
+
+```text
+Pause Agent
+Resume Agent
+Stop Agent
+Retry Task
+Reassign Task
+Change Priority
+Change Deadline
+Change Workflow
+Approve
+Reject
+Cancel
+Escalate
+```
+
+If an agent is doing something dangerous, the human must be able to stop it immediately.
+
+---
+
+# 32. Notifications
+
+Support:
+
+```text
+In-app
+Email
+Slack
+Webhook
+Browser notification
+```
+
+Notification categories:
+
+```text
+Task completed
+Task failed
+Agent blocked
+Agent waiting
+Sprint at risk
+Deadline approaching
+Security issue
+Deployment requested
+Human approval required
+Budget exceeded
+```
+
+---
+
+# 33. Search
+
+Global search should find:
+
+```text
+Projects
+Agents
+Tasks
+Sprints
+Messages
+Activities
+Commits
+Pull Requests
+Errors
+Deployments
+```
+
+---
+
+# 34. Audit Log
+
+Every important action must be recorded.
+
+Example:
+
+```text
+2026-08-30 20:42
+
+User:
+Kautik
+
+Action:
+Changed production approval policy
+
+Previous:
+Automatic
+
+New:
+Human approval
+
+Project:
+Customer Support Platform
+```
+
+---
+
+# 35. API Architecture
+
+Build a clean API.
+
+Example endpoints:
+
+```text
+/api/auth
+/api/organizations
+/api/projects
+/api/agents
+/api/agents/:id/runs
+/api/sprints
+/api/tasks
+/api/tasks/:id
+/api/workflows
+/api/workflows/:id/runs
+/api/activities
+/api/messages
+/api/notifications
+/api/approvals
+/api/git
+/api/deployments
+/api/metrics
+/api/costs
+```
+
+Use OpenAPI documentation.
+
+---
+
+# 36. Real-Time Architecture
+
+Use WebSockets or SSE.
+
+Events:
+
+```text
+agent.status.changed
+agent.task.started
+agent.task.completed
+agent.task.failed
+agent.blocked
+agent.message.created
+task.status.changed
+task.assigned
+task.completed
+workflow.started
+workflow.completed
+workflow.failed
+sprint.progress.changed
+deployment.started
+deployment.completed
+notification.created
+```
+
+Dashboard should update without refreshing the page.
+
+---
+
+# 37. Recommended Technology
+
+Use:
+
+### Frontend
+
+```text
+Next.js
+React
+TypeScript
+Tailwind CSS
+shadcn/ui
+React Query
+WebSocket
+Recharts
+React Flow
+```
+
+### Backend
+
+```text
+Python
+FastAPI
+Pydantic
+SQLAlchemy
+PostgreSQL
+Redis
+Celery / Temporal / equivalent workflow engine
+WebSockets
+```
+
+Use a durable workflow engine such as **Temporal** if practical.
+
+The workflow engine must survive server restarts and continue pending workflows.
+
+### Agent Runtime
+
+Create an abstraction:
+
+```text
+AgentRuntime
+```
+
+with adapters for different providers/models.
+
+Example:
+
+```text
+OpenAI
+Anthropic
+Google
+Local Models
+Coding Agents
+```
+
+Do not hard-code the application to one model provider.
+
+### Infrastructure
+
+```text
+Docker
+GitHub
+GitHub Actions
+Redis
+PostgreSQL
+Object Storage
+```
+
+Kubernetes should be optional for later scaling.
+
+---
+
+# 38. UI Design
+
+Design should feel like a modern enterprise SaaS product.
+
+Use:
+
+* Left sidebar
+* Top navigation
+* Cards
+* Tables
+* Kanban
+* Charts
+* Real-time status indicators
+* Activity timeline
+* Agent avatars
+* Progress bars
+* Status badges
+* Modal dialogs
+* Command palette
+
+Sidebar:
+
+```text
+🏠 Dashboard
+
+🏢 Company
+   Employees
+   Departments
+   Policies
+
+📁 Projects
+
+🏃 Sprints
+
+✅ Tasks
+
+🤖 AI Employees
+
+🔄 Workflows
+
+⚡ Live Activity
+
+💬 Communication
+
+🧪 QA
+
+🚀 Deployments
+
+🔔 Alerts
+
+📊 Analytics
+
+💰 AI Costs
+
+⚙️ Settings
+```
+
+---
+
+# 39. Main Dashboard UX
+
+The first screen should immediately answer:
+
+### What is happening?
+
+### Who is working?
+
+### What is blocked?
+
+### Will we deliver on time?
+
+### What needs my attention?
+
+Top cards:
+
+```text
+Active Agents
+Active Tasks
+Sprint Progress
+Delivery Prediction
+Blocked
+Failed
+Alerts
+AI Cost
+```
+
+Then:
+
+```text
+LIVE AGENTS
+```
+
+Then:
+
+```text
+SPRINT BOARD
+```
+
+Then:
+
+```text
+LIVE ACTIVITY
+```
+
+Then:
+
+```text
+RISKS & ALERTS
+```
+
+---
+
+# 40. Example End-to-End Scenario
+
+User enters:
+
+> Build a customer support application.
+
+PM Agent analyzes it.
+
+PM creates:
+
+```text
+EPIC-1 Authentication
+EPIC-2 Ticket Management
+EPIC-3 SLA
+EPIC-4 Dashboard
+EPIC-5 Notifications
+```
+
+PM creates tasks.
+
+Example:
+
+```text
+DB-001
+Create database schema
+
+BE-001
+Create authentication API
+
+FE-001
+Create login UI
+
+QA-001
+Test authentication
+```
+
+Dependency:
+
+```text
+DB-001
+ ↓
+BE-001
+ ↓
+FE-001
+ ↓
+QA-001
+```
+
+Database Agent starts.
+
+It completes:
+
+```text
+Schema created.
+Migration successful.
+PR #1 created.
+```
+
+Orchestrator automatically starts Backend Agent.
+
+Backend Agent completes:
+
+```text
+Auth API completed.
+Tests: 31 passed.
+PR #2 created.
+```
+
+Orchestrator automatically starts Frontend Agent.
+
+Frontend Agent encounters:
+
+```text
+API response format does not match specification.
+```
+
+It creates a blocker.
+
+PM Agent is notified.
+
+PM determines Backend Agent should fix it.
+
+Backend Agent receives follow-up.
+
+Backend fixes it.
+
+Frontend resumes.
+
+Frontend completes.
+
+QA starts automatically.
+
+QA finds:
+
+```text
+2 tests failed.
+```
+
+QA sends failure to Backend.
+
+Backend fixes it.
+
+QA runs again.
+
+```text
+43/43 passed.
+```
+
+Security Agent reviews.
+
+Security Agent finds:
+
+```text
+MEDIUM vulnerability.
+```
+
+It creates a task.
+
+Backend fixes it.
+
+Security approves.
+
+PM marks feature ready.
+
+DevOps Agent prepares deployment.
+
+Because production deployment requires human approval:
+
+```text
+🚨 APPROVAL REQUIRED
+
+Customer Support Platform
+Production Deployment
+
+All tests passed.
+Security approved.
+
+[Approve Deployment]
+[Reject]
+```
+
+User approves.
+
+DevOps deploys.
+
+Dashboard shows:
+
+```text
+🚀 DEPLOYMENT SUCCESSFUL
+
+Version:
+v1.0.0
+
+Environment:
+Production
+
+Status:
+Healthy
+```
+
+---
+
+# 41. Critical Requirement — Do Not Fake Agent Activity
+
+Do NOT create fake progress bars or fake logs.
+
+If the dashboard says:
+
+```text
+Backend Agent
+Working
+78%
+```
+
+that information must come from actual agent execution.
+
+Likewise:
+
+```text
+Tests passed
+Files changed
+Commits
+Token usage
+Execution time
+```
+
+must come from real execution data.
+
+The demo mode may use simulated agents, but production mode must use actual agent runs.
+
+---
+
+# 42. Failure Recovery
+
+The system must survive:
+
+* Backend restart
+* Worker restart
+* Agent timeout
+* Model API failure
+* Network failure
+* Git conflict
+* Docker failure
+* Database failure
+* Agent crash
+
+Pending workflows must resume safely.
+
+Use durable state and idempotent operations.
+
+Never lose task state.
+
+---
+
+# 43. MVP Development Order
+
+Build in this exact order.
+
+## Phase 1
+
+Authentication + organization.
+
+## Phase 2
+
+Projects + agents + tasks.
+
+## Phase 3
+
+Sprint + Kanban.
+
+## Phase 4
+
+Agent execution engine.
+
+## Phase 5
+
+Orchestrator.
+
+## Phase 6
+
+Agent-to-agent dependencies.
+
+## Phase 7
+
+Live WebSocket dashboard.
+
+## Phase 8
+
+Git integration.
+
+## Phase 9
+
+QA/review workflows.
+
+## Phase 10
+
+Notifications/escalation.
+
+## Phase 11
+
+Workflow builder.
+
+## Phase 12
+
+Analytics/cost tracking.
+
+## Phase 13
+
+Production deployment.
+
+---
+
+# 44. Development Rules
+
+Before writing code:
+
+1. Analyze the requirements.
+2. Create architecture.
+3. Create database schema.
+4. Create API specification.
+5. Create UI route structure.
+6. Create task breakdown.
+7. Identify dependencies.
+8. Implement incrementally.
+
+Do not attempt to generate the entire application in one giant code generation step.
+
+Work feature-by-feature.
+
+After every feature:
+
+```text
+Implement
+ ↓
+Test
+ ↓
+Review
+ ↓
+Fix
+ ↓
+Commit
+```
+
+Never claim something is complete unless it has been tested.
+
+---
+
+# 45. Required Deliverables
+
+Build:
+
+```text
+Frontend
+Backend
+Database
+Agent Runtime
+Orchestrator
+Workflow Engine
+Real-Time Events
+Git Integration
+Notification System
+Authentication
+Authorization
+Audit Logs
+Monitoring
+Tests
+Docker
+CI/CD
+Documentation
+```
+
+Provide:
+
+```text
+README.md
+ARCHITECTURE.md
+API.md
+DATABASE.md
+AGENTS.md
+WORKFLOWS.md
+DEPLOYMENT.md
+SECURITY.md
+```
+
+Include:
+
+* `.env.example`
+* Docker Compose
+* Database migrations
+* Seed/demo data
+* Unit tests
+* Integration tests
+* E2E tests
+
+---
+
+# 46. Final Product Goal
+
+The finished product should allow a human CEO/CTO to open one dashboard and see:
+
+```text
+                    AI COMPANY
+
+Projects: 4
+Agents: 12
+Active: 8
+Tasks: 87
+Sprint: 74%
+Blocked: 2
+At Risk: 1
+
+────────────────────────────────────
+
+AI EMPLOYEES
+
+🟢 PM Agent
+Planning Sprint 8
+
+🟢 Backend Agent
+Building Ticket API
+
+🟢 Frontend Agent
+Building Dashboard
+
+🟡 QA Agent
+Waiting for Backend
+
+🔴 Database Agent
+Migration failed
+
+────────────────────────────────────
+
+SPRINT DELIVERY
+
+██████████████░░░░ 74%
+
+Expected:
+Sep 6
+
+Deadline:
+Sep 7
+
+Status:
+🟢 ON TRACK
+
+────────────────────────────────────
+
+LIVE ACTIVITY
+
+Backend → API completed
+QA → Tests started
+PM → Assigned new task
+Frontend → Received backend output
+
+────────────────────────────────────
+
+REQUIRES YOUR ATTENTION
+
+🚨 Database migration failed
+
+⚠️ Sprint task may miss deadline
+
+🔐 Production deployment awaiting approval
+```
+
+The core idea is:
+
+**The user manages the company.
+The PM manages the agents.
+Agents manage and execute tasks.
+Agents communicate through the orchestrator.
+Task outputs unlock dependent work.
+Failures trigger recovery.
+Blockers trigger escalation.
+The dashboard shows everything live.**
+
+Build the system so that adding a new AI employee, changing its role, changing its workflow, changing its model, or changing its permissions can be done from the GUI without modifying application source code.
