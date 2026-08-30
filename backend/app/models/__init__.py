@@ -72,6 +72,29 @@ class Organization(Base):
     agents: Mapped[list["Agent"]] = relationship(back_populates="organization")
     projects: Mapped[list["Project"]] = relationship(back_populates="organization")
     execution_targets: Mapped[list["ExecutionTarget"]] = relationship(back_populates="organization")
+    ai_provider_configs: Mapped[list["AiProviderConfig"]] = relationship(back_populates="organization")
+
+
+class AiProviderConfig(Base):
+    """Org-level AI provider API keys and enabled models."""
+
+    __tablename__ = "ai_provider_configs"
+    __table_args__ = (UniqueConstraint("organization_id", "provider", name="uq_org_ai_provider"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid_pk)
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False
+    )
+    provider: Mapped[str] = mapped_column(String(50), nullable=False)
+    api_key: Mapped[str] = mapped_column(Text, nullable=False)
+    enabled_models: Mapped[list] = mapped_column(JSONB, default=list)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    organization: Mapped["Organization"] = relationship(back_populates="ai_provider_configs")
 
 
 class OrganizationMember(Base):
@@ -163,6 +186,8 @@ class Agent(Base):
     status: Mapped[AgentStatus] = mapped_column(
         Enum(AgentStatus, values_callable=_enum_values), default=AgentStatus.IDLE
     )
+    last_error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    tokens_used: Mapped[int] = mapped_column(Integer, default=0)
     current_task_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
@@ -197,6 +222,8 @@ class Project(Base):
     requirements: Mapped[list] = mapped_column(JSONB, default=list)
     tech_stack: Mapped[list] = mapped_column(JSONB, default=list)
     repository_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    workspace_path: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
+    logic_graph: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     environments: Mapped[dict] = mapped_column(JSONB, default=dict)
     status: Mapped[ProjectStatus] = mapped_column(
         Enum(ProjectStatus, values_callable=_enum_values), default=ProjectStatus.PLANNING
@@ -208,9 +235,15 @@ class Project(Base):
     )
 
     organization: Mapped["Organization"] = relationship(back_populates="projects")
-    epics: Mapped[list["Epic"]] = relationship(back_populates="project")
-    sprints: Mapped[list["Sprint"]] = relationship(back_populates="project")
-    tasks: Mapped[list["Task"]] = relationship(back_populates="project")
+    epics: Mapped[list["Epic"]] = relationship(
+        back_populates="project", cascade="all, delete-orphan", passive_deletes=True
+    )
+    sprints: Mapped[list["Sprint"]] = relationship(
+        back_populates="project", cascade="all, delete-orphan", passive_deletes=True
+    )
+    tasks: Mapped[list["Task"]] = relationship(
+        back_populates="project", cascade="all, delete-orphan", passive_deletes=True
+    )
     execution_targets: Mapped[list["ExecutionTarget"]] = relationship(back_populates="project")
 
 
@@ -247,6 +280,7 @@ class ExecutionTarget(Base):
     port: Mapped[int] = mapped_column(Integer, default=22)
     username: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     ssh_key_path: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
+    ssh_password: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     docker_image: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     is_default: Mapped[bool] = mapped_column(Boolean, default=False)
     status: Mapped[ExecutionTargetStatus] = mapped_column(
@@ -272,11 +306,14 @@ class Epic(Base):
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    logic_graph: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(String(50), default="backlog")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     project: Mapped["Project"] = relationship(back_populates="epics")
-    features: Mapped[list["Feature"]] = relationship(back_populates="epic")
+    features: Mapped[list["Feature"]] = relationship(
+        back_populates="epic", cascade="all, delete-orphan", passive_deletes=True
+    )
 
 
 class Feature(Base):
@@ -287,12 +324,16 @@ class Feature(Base):
         UUID(as_uuid=True), ForeignKey("epics.id", ondelete="CASCADE"), nullable=False
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
+    slug: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    logic_graph: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(String(50), default="backlog")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     epic: Mapped["Epic"] = relationship(back_populates="features")
-    tasks: Mapped[list["Task"]] = relationship(back_populates="feature")
+    tasks: Mapped[list["Task"]] = relationship(
+        back_populates="feature", cascade="all, delete-orphan", passive_deletes=True
+    )
 
 
 class TaskStatus(str, enum.Enum):
@@ -372,6 +413,61 @@ class Task(Base):
     project: Mapped["Project"] = relationship(back_populates="tasks")
     feature: Mapped[Optional["Feature"]] = relationship(back_populates="tasks")
     assigned_agent: Mapped[Optional["Agent"]] = relationship(foreign_keys=[assigned_agent_id])
+    screenshot_records: Mapped[list["TaskScreenshot"]] = relationship(
+        back_populates="task", cascade="all, delete-orphan", passive_deletes=True
+    )
+    execution_runs: Mapped[list["TaskExecutionRun"]] = relationship(
+        back_populates="task", cascade="all, delete-orphan", passive_deletes=True
+    )
+
+
+class TaskExecutionRun(Base):
+    __tablename__ = "task_execution_runs"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid_pk)
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False
+    )
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+    )
+    task_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False
+    )
+    agent_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("agents.id", ondelete="SET NULL"), nullable=True
+    )
+    agent_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    status: Mapped[str] = mapped_column(String(32), default="running")
+    token_usage: Mapped[int] = mapped_column(Integer, default=0)
+    logs: Mapped[list] = mapped_column(JSONB, default=list)
+    error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    ended_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    task: Mapped["Task"] = relationship(back_populates="execution_runs")
+
+
+class TaskScreenshot(Base):
+    __tablename__ = "task_screenshots"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid_pk)
+    task_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False
+    )
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+    )
+    feature_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("features.id", ondelete="SET NULL"), nullable=True
+    )
+    filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    file_path: Mapped[str] = mapped_column(String(1000), nullable=False)
+    caption: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    task: Mapped["Task"] = relationship(back_populates="screenshot_records")
+    feature: Mapped[Optional["Feature"]] = relationship()
 
 
 class SprintStatus(str, enum.Enum):

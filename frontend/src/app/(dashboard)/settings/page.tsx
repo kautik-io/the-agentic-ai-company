@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { api, ExecutionTarget } from "@/lib/api";
+import { AiProviderSettings } from "@/components/settings/ai-provider-settings";
+import { PageLoader } from "@/components/ui/page-loader";
 import { StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -17,6 +19,7 @@ const EMPTY_FORM = {
   port: 22,
   username: "",
   ssh_key_path: "",
+  ssh_password: "",
   docker_image: "",
   is_default: true,
 };
@@ -24,7 +27,9 @@ const EMPTY_FORM = {
 export default function SettingsPage() {
   const { org } = useAuth();
   const [targets, setTargets] = useState<ExecutionTarget[]>([]);
+  const [fetching, setFetching] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [testingId, setTestingId] = useState<string | null>(null);
@@ -32,7 +37,11 @@ export default function SettingsPage() {
 
   const load = () => {
     if (!org) return;
-    api.listExecutionTargets(org.id).then(setTargets).catch(console.error);
+    setFetching(true);
+    api.listExecutionTargets(org.id)
+      .then(setTargets)
+      .catch(console.error)
+      .finally(() => setFetching(false));
   };
 
   useEffect(load, [org]);
@@ -43,7 +52,7 @@ export default function SettingsPage() {
     setLoading(true);
     setTestResult(null);
     try {
-      await api.createExecutionTarget(org.id, {
+      const payload = {
         name: form.name,
         target_type: form.target_type,
         workspace_path: form.workspace_path,
@@ -51,10 +60,17 @@ export default function SettingsPage() {
         port: form.port,
         username: form.username || undefined,
         ssh_key_path: form.ssh_key_path || undefined,
+        ssh_password: form.ssh_password || undefined,
         docker_image: form.docker_image || undefined,
         is_default: form.is_default,
-      });
+      };
+      if (editingId) {
+        await api.updateExecutionTarget(org.id, editingId, payload);
+      } else {
+        await api.createExecutionTarget(org.id, payload);
+      }
       setShowForm(false);
+      setEditingId(null);
       setForm(EMPTY_FORM);
       load();
     } catch (err) {
@@ -62,6 +78,30 @@ export default function SettingsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEdit = (target: ExecutionTarget) => {
+    setEditingId(target.id);
+    setForm({
+      name: target.name,
+      target_type: target.target_type,
+      workspace_path: target.workspace_path,
+      host: target.host || "",
+      port: target.port,
+      username: target.username || "",
+      ssh_key_path: target.ssh_key_path || "",
+      ssh_password: "",
+      docker_image: target.docker_image || "",
+      is_default: target.is_default,
+    });
+    setShowForm(true);
+    setTestResult(null);
+  };
+
+  const handleCancelForm = () => {
+    setShowForm(false);
+    setEditingId(null);
+    setForm(EMPTY_FORM);
   };
 
   const handleTest = async (targetId: string) => {
@@ -86,15 +126,26 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="p-8 space-y-6 max-w-4xl">
+    <div className="p-8 space-y-10 max-w-4xl">
+      <div>
+        <h1 className="text-2xl font-bold">Settings</h1>
+        <p className="text-muted-foreground">
+          AI provider keys, models, and run environments for your agents
+        </p>
+      </div>
+
+      <AiProviderSettings />
+
+      <hr className="border-border" />
+
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Settings</h1>
-          <p className="text-muted-foreground">
-            Configure where AI agents run code — local paths, SSH hosts, or Docker (like Cursor remote)
+          <h2 className="text-lg font-semibold">Run Environments</h2>
+          <p className="text-sm text-muted-foreground">
+            Where AI agents run code — local paths, SSH, or Docker
           </p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)}>
+        <Button onClick={() => { setEditingId(null); setForm(EMPTY_FORM); setShowForm(!showForm); }}>
           <Plus className="h-4 w-4 mr-2" />
           Add Run Environment
         </Button>
@@ -119,7 +170,7 @@ export default function SettingsPage() {
       {showForm && (
         <Card>
           <CardHeader>
-            <CardTitle>Add Run Environment</CardTitle>
+            <CardTitle>{editingId ? "Edit Run Environment" : "Add Run Environment"}</CardTitle>
           </CardHeader>
           <form onSubmit={handleCreate} className="grid md:grid-cols-2 gap-4">
             <div>
@@ -187,6 +238,16 @@ export default function SettingsPage() {
                     placeholder="/home/aividmini/.ssh/id_rsa"
                   />
                 </div>
+                <div>
+                  <Label>SSH password (optional if using key)</Label>
+                  <Input
+                    type="password"
+                    value={form.ssh_password}
+                    onChange={(e) => setForm({ ...form, ssh_password: e.target.value })}
+                    placeholder="Leave blank to keep existing"
+                    autoComplete="new-password"
+                  />
+                </div>
               </>
             )}
             {form.target_type === "docker" && (
@@ -209,8 +270,10 @@ export default function SettingsPage() {
               <Label htmlFor="is_default" className="mb-0">Set as default run environment</Label>
             </div>
             <div className="md:col-span-2 flex gap-3">
-              <Button type="submit" disabled={loading}>{loading ? "Saving..." : "Save environment"}</Button>
-              <Button type="button" variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? "Saving..." : editingId ? "Update environment" : "Save environment"}
+              </Button>
+              <Button type="button" variant="outline" onClick={handleCancelForm}>Cancel</Button>
             </div>
           </form>
         </Card>
@@ -244,6 +307,7 @@ export default function SettingsPage() {
                       <p className="text-sm text-muted-foreground">
                         ssh {t.username}@{t.host}:{t.port}
                         {t.ssh_key_path ? ` — key: ${t.ssh_key_path}` : ""}
+                        {t.ssh_password_set ? " — password saved" : ""}
                       </p>
                     )}
                     {t.last_error && (
@@ -251,15 +315,24 @@ export default function SettingsPage() {
                     )}
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleTest(t.id)}
-                  disabled={testingId === t.id}
-                >
-                  <PlugZap className="h-4 w-4 mr-1" />
-                  {testingId === t.id ? "Testing..." : "Test"}
-                </Button>
+                <div className="flex gap-2 shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleEdit(t)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleTest(t.id)}
+                    disabled={testingId === t.id}
+                  >
+                    <PlugZap className="h-4 w-4 mr-1" />
+                    {testingId === t.id ? "Testing..." : "Test"}
+                  </Button>
+                </div>
               </div>
             </Card>
           ))

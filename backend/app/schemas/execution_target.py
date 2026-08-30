@@ -15,6 +15,7 @@ class ExecutionTargetCreate(BaseModel):
     port: int = Field(default=22, ge=1, le=65535)
     username: str | None = None
     ssh_key_path: str | None = None
+    ssh_password: str | None = None
     docker_image: str | None = None
     is_default: bool = False
 
@@ -28,6 +29,7 @@ class ExecutionTargetUpdate(BaseModel):
     port: int | None = None
     username: str | None = None
     ssh_key_path: str | None = None
+    ssh_password: str | None = None
     docker_image: str | None = None
     is_default: bool | None = None
 
@@ -45,6 +47,7 @@ class ExecutionTargetResponse(BaseModel):
     port: int
     username: str | None
     ssh_key_path: str | None
+    ssh_password_set: bool = False
     docker_image: str | None
     is_default: bool
     status: str

@@ -1,6 +1,6 @@
-# AI Company OS
+# AI Engineering OS (AIOS)
 
-A production-ready web application where AI agents operate as employees in a virtual software development company. You act as CEO/CTO — hire agents, create projects, assign tasks, and monitor delivery in real time.
+A production-ready platform where AI agents work as an engineering team — plan, build, test, and deploy together. **Your AI Team, Working Together.**
 
 ## Quick Start
 

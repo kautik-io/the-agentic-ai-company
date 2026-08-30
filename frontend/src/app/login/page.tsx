@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
+import { BRAND } from "@/lib/brand";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -31,8 +32,8 @@ function LoginForm() {
     <div className="flex min-h-screen items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Sign in to AI Company OS</CardTitle>
-          <CardDescription>Manage your virtual AI software company</CardDescription>
+          <CardTitle>Sign in to {BRAND.short}</CardTitle>
+          <CardDescription>{BRAND.tagline}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (

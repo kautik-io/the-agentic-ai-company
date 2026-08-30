@@ -14,7 +14,7 @@ from app.schemas.execution_target import (
     ExecutionTargetResponse,
     ExecutionTargetUpdate,
 )
-from app.services.execution_target import ExecutionTargetService
+from app.services.execution_target import ExecutionTargetService, to_response
 
 router = APIRouter(prefix="/organizations/{org_id}/execution-targets", tags=["execution-targets"])
 
@@ -25,7 +25,7 @@ async def list_targets(
     membership: Annotated[object, Depends(get_org_membership)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
-    return await ExecutionTargetService.list(db, org_id)
+    return [to_response(t) for t in await ExecutionTargetService.list(db, org_id)]
 
 
 @router.post("", response_model=ExecutionTargetResponse, status_code=status.HTTP_201_CREATED)
@@ -35,7 +35,8 @@ async def create_target(
     membership: Annotated[object, Depends(get_org_membership)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
-    return await ExecutionTargetService.create(db, org_id, data)
+    target = await ExecutionTargetService.create(db, org_id, data)
+    return to_response(target)
 
 
 @router.get("/{target_id}", response_model=ExecutionTargetResponse)
@@ -48,7 +49,7 @@ async def get_target(
     target = await ExecutionTargetService.get(db, org_id, target_id)
     if target is None:
         raise HTTPException(status_code=404, detail="Execution target not found")
-    return target
+    return to_response(target)
 
 
 @router.patch("/{target_id}", response_model=ExecutionTargetResponse)
@@ -62,7 +63,7 @@ async def update_target(
     target = await ExecutionTargetService.update(db, org_id, target_id, data)
     if target is None:
         raise HTTPException(status_code=404, detail="Execution target not found")
-    return target
+    return to_response(target)
 
 
 @router.delete("/{target_id}", status_code=status.HTTP_204_NO_CONTENT)

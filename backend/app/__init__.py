@@ -1,1 +1,1 @@
-"""AI Company OS — Backend Application."""
+"""AI Engineering OS (AIOS) — Backend Application."""

@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { BRAND } from "@/lib/brand";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "AI Company OS",
-  description: "Virtual software development company powered by AI agents",
+  title: `${BRAND.short} — ${BRAND.name}`,
+  description: BRAND.tagline,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

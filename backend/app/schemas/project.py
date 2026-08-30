@@ -2,7 +2,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, Field
 
 
 class AgentCreate(BaseModel):
@@ -10,9 +10,9 @@ class AgentCreate(BaseModel):
     role: str = Field(min_length=1, max_length=255)
     department_id: uuid.UUID | None = None
     manager_id: uuid.UUID | None = None
-    description: str | None = None
-    responsibilities: list[str] = Field(default_factory=list)
-    skills: list[str] = Field(default_factory=list)
+    description: str = Field(min_length=1)
+    responsibilities: list[str] = Field(min_length=1)
+    skills: list[str] = Field(min_length=1)
     ai_provider: str = "openai"
     ai_model: str = "gpt-4o"
     temperature: float = Field(default=0.7, ge=0, le=2)
@@ -50,6 +50,8 @@ class AgentUpdate(BaseModel):
     escalation_rules: dict | None = None
     is_active: bool | None = None
     execution_target_id: uuid.UUID | None = None
+    status: str | None = None
+    last_error: str | None = None
 
 
 class AgentResponse(BaseModel):
@@ -78,6 +80,8 @@ class AgentResponse(BaseModel):
     working_hours: dict
     escalation_rules: dict
     status: str
+    last_error: str | None
+    tokens_used: int
     current_task_id: uuid.UUID | None
     is_active: bool
     created_at: datetime
@@ -91,6 +95,7 @@ class ProjectCreate(BaseModel):
     requirements: list[str] = Field(default_factory=list)
     tech_stack: list[str] = Field(default_factory=list)
     repository_url: str | None = None
+    execution_target_id: uuid.UUID | None = None
 
 
 class ProjectUpdate(BaseModel):
@@ -102,6 +107,7 @@ class ProjectUpdate(BaseModel):
     repository_url: str | None = None
     status: str | None = None
     settings: dict | None = None
+    logic_graph: str | None = None
 
 
 class ProjectResponse(BaseModel):
@@ -116,11 +122,62 @@ class ProjectResponse(BaseModel):
     requirements: list
     tech_stack: list
     repository_url: str | None
+    workspace_path: str | None
+    logic_graph: str | None
     environments: dict
     status: str
     settings: dict
     created_at: datetime
     updated_at: datetime
+
+
+class EpicCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=255)
+    description: str | None = None
+    logic_graph: str | None = None
+
+
+class EpicResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    project_id: uuid.UUID
+    title: str
+    description: str | None
+    logic_graph: str | None
+    status: str
+    created_at: datetime
+
+
+class FeatureCreate(BaseModel):
+    title: str = Field(min_length=1, max_length=255)
+    description: str | None = None
+    logic_graph: str | None = None
+
+
+class FeatureResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    epic_id: uuid.UUID
+    title: str
+    slug: str | None
+    description: str | None
+    logic_graph: str | None
+    status: str
+    created_at: datetime
+
+
+class LogicGraphUpdate(BaseModel):
+    logic_graph: str = Field(min_length=1)
+
+
+class ProjectGraphResponse(BaseModel):
+    project_id: uuid.UUID
+    project_name: str
+    logic_graph: str | None
+    epics: list[EpicResponse]
+    features: list[FeatureResponse]
 
 
 class TaskCreate(BaseModel):
@@ -179,6 +236,7 @@ class TaskResponse(BaseModel):
     failure_reason: str | None
     dependencies: list
     output: dict
+    screenshots: list = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime
 

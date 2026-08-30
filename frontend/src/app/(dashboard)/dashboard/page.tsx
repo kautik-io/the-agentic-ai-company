@@ -3,29 +3,51 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { api, Agent, Activity, DashboardStats } from "@/lib/api";
+import { BRAND } from "@/lib/brand";
 import { StatCard } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ErrorBanner } from "@/components/ui/error-banner";
+import { PageLoader } from "@/components/ui/page-loader";
+import { AlertTriangle } from "lucide-react";
+
+function budgetPercent(agent: Agent) {
+  if (!agent.max_token_budget) return 0;
+  return Math.min(100, Math.round((agent.tokens_used / agent.max_token_budget) * 100));
+}
 
 export default function DashboardPage() {
   const { org, orgs, refreshOrgs } = useAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [fetching, setFetching] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [creatingOrg, setCreatingOrg] = useState(false);
 
   useEffect(() => {
     if (!org) return;
-    api.getDashboard(org.id).then(setStats).catch(console.error);
-    api.listAgents(org.id).then(setAgents).catch(console.error);
-    api.listActivities(org.id, 20).then(setActivities).catch(console.error);
+    setFetching(true);
+    setError(null);
+    Promise.all([
+      api.getDashboard(org.id),
+      api.listAgents(org.id),
+      api.listActivities(org.id, 20),
+    ])
+      .then(([s, a, acts]) => {
+        setStats(s);
+        setAgents(a);
+        setActivities(acts);
+      })
+      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load dashboard"))
+      .finally(() => setFetching(false));
   }, [org]);
 
   const handleCreateOrg = async () => {
     setCreatingOrg(true);
     try {
-      await api.createOrganization("My AI Company", "My virtual software company");
+      await api.createOrganization("My Engineering Team", "AIOS organization");
       await refreshOrgs();
     } finally {
       setCreatingOrg(false);
@@ -37,10 +59,10 @@ export default function DashboardPage() {
       <div className="flex h-full items-center justify-center p-8">
         <Card className="max-w-md text-center">
           <CardHeader>
-            <CardTitle>Welcome to AI Company OS</CardTitle>
+            <CardTitle>Welcome to {BRAND.name}</CardTitle>
           </CardHeader>
           <p className="text-muted-foreground mb-6">
-            Create your first organization to start hiring AI employees and managing projects.
+            {BRAND.tagline} Hire agents, create projects, and watch them plan, build, test & deploy.
           </p>
           <Button onClick={handleCreateOrg} disabled={creatingOrg}>
             {creatingOrg ? "Creating..." : "Create Organization"}
@@ -50,12 +72,37 @@ export default function DashboardPage() {
     );
   }
 
+  if (fetching) {
+    return <PageLoader label="Loading dashboard..." />;
+  }
+
+  const troubledAgents = agents.filter(
+    (a) => a.status === "failed" || a.last_error || budgetPercent(a) >= 90
+  );
+
   return (
     <div className="p-8 space-y-8">
       <div>
         <h1 className="text-2xl font-bold">Executive Dashboard</h1>
         <p className="text-muted-foreground">{org?.name} — Company overview</p>
       </div>
+
+      {error && <ErrorBanner message={error} />}
+
+      {troubledAgents.length > 0 && (
+        <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-3 space-y-2">
+          <p className="text-sm font-medium text-red-200 flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4" />
+            Agent API / balance issues
+          </p>
+          {troubledAgents.map((a) => (
+            <p key={a.id} className="text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">{a.name}</span>
+              {a.last_error || `Token budget at ${budgetPercent(a)}%`}
+            </p>
+          ))}
+        </div>
+      )}
 
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
@@ -87,6 +134,9 @@ export default function DashboardPage() {
                   <div>
                     <p className="font-medium">{agent.name}</p>
                     <p className="text-sm text-muted-foreground">{agent.role}</p>
+                    {agent.last_error && (
+                      <p className="text-xs text-red-400 mt-1 line-clamp-1">{agent.last_error}</p>
+                    )}
                   </div>
                   <StatusBadge status={agent.status} />
                 </div>

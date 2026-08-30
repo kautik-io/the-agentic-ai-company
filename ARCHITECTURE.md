@@ -1,8 +1,8 @@
-# AI Company OS — Architecture
+# AI Engineering OS (AIOS) — Architecture
 
 ## Overview
 
-AI Company OS is an event-driven, state-driven platform where AI agents operate as employees within organizations. All agent communication flows through a central **Orchestrator** — never direct agent-to-agent channels.
+AI Engineering OS is an event-driven, state-driven platform where AI agents operate as a coordinated engineering team within organizations. All agent communication flows through a central **Orchestrator** — never direct agent-to-agent channels.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐

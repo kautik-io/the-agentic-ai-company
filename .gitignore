@@ -35,6 +35,14 @@ logs/
 postgres_data/
 redis_data/
 
+# Agent workspaces (created per project)
+workspaces/*
+!workspaces/.gitkeep
+
+# Task screenshots / uploads
+uploads/*
+!uploads/.gitkeep
+
 # Deploy state (auto script)
 .deploy/
 

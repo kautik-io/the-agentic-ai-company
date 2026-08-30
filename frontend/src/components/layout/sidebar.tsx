@@ -15,9 +15,11 @@ import {
   DollarSign,
   Bell,
   Rocket,
+  Network,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
+import { BRAND } from "@/lib/brand";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -30,6 +32,7 @@ const navItems = [
   { href: "/alerts", label: "Alerts", icon: Bell },
   { href: "/costs", label: "AI Costs", icon: DollarSign },
   { href: "/company", label: "Company", icon: Building2 },
+  { href: "/system-design", label: "System Design", icon: Network },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -40,8 +43,8 @@ export function Sidebar() {
   return (
     <aside className="flex h-screen w-64 flex-col border-r border-border bg-card">
       <div className="border-b border-border p-5">
-        <h1 className="text-lg font-bold tracking-tight">AI Company OS</h1>
-        <p className="text-xs text-muted-foreground mt-0.5">Virtual Software Company</p>
+        <h1 className="text-lg font-bold tracking-tight">{BRAND.short}</h1>
+        <p className="text-xs text-muted-foreground mt-0.5">{BRAND.name}</p>
       </div>
 
       {orgs.length > 0 && (

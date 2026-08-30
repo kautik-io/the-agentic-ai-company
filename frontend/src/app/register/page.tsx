@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AuthProvider } from "@/lib/auth-context";
 import { api } from "@/lib/api";
+import { BRAND } from "@/lib/brand";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -38,7 +39,7 @@ function RegisterForm() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Create your account</CardTitle>
-          <CardDescription>Start managing your AI software company</CardDescription>
+          <CardDescription>Join {BRAND.name} — {BRAND.tagline}</CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (

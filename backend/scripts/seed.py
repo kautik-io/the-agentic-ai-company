@@ -12,6 +12,7 @@ from app.core.database import AsyncSessionLocal
 from app.core.security import get_password_hash
 from app.models import (
     Agent,
+    AgentStatus,
     Department,
     ExecutionTarget,
     ExecutionTargetStatus,
@@ -180,6 +181,7 @@ async def seed():
                 dept_map[dept_name] = dept
 
         alex_id = None
+        backend_agent_id = None
         for agent_data in DEMO_AGENTS:
             dept_name = agent_data["department"]
             dept = dept_map[dept_name]
@@ -199,6 +201,19 @@ async def seed():
             await db.flush()
             if agent.name == "Alex":
                 alex_id = agent.id
+            if agent.role == "Backend Developer":
+                backend_agent_id = agent.id
+
+        if backend_agent_id:
+            result = await db.execute(select(Agent).where(Agent.id == backend_agent_id))
+            backend = result.scalar_one()
+            backend.status = AgentStatus.FAILED
+            backend.last_error = (
+                "OpenAI API error 429: insufficient quota / billing balance exhausted. "
+                "Add credits or switch provider before retrying."
+            )
+            backend.tokens_used = 95000
+            backend.max_token_budget = 100000
 
         if alex_id:
             result = await db.execute(

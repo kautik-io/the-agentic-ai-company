@@ -13,7 +13,31 @@ from app.models import (
     ExecutionTargetStatus,
     ExecutionTargetType,
 )
-from app.schemas.execution_target import ExecutionTargetCreate, ExecutionTargetUpdate
+from app.schemas.execution_target import ExecutionTargetCreate, ExecutionTargetResponse, ExecutionTargetUpdate
+from app.services.workspace import WorkspaceError, WorkspaceService
+
+
+def to_response(target: ExecutionTarget) -> ExecutionTargetResponse:
+    return ExecutionTargetResponse(
+        id=target.id,
+        organization_id=target.organization_id,
+        project_id=target.project_id,
+        name=target.name,
+        target_type=target.target_type.value,
+        workspace_path=target.workspace_path,
+        host=target.host,
+        port=target.port,
+        username=target.username,
+        ssh_key_path=target.ssh_key_path,
+        ssh_password_set=bool(target.ssh_password),
+        docker_image=target.docker_image,
+        is_default=target.is_default,
+        status=target.status.value,
+        last_error=target.last_error,
+        last_verified_at=target.last_verified_at,
+        created_at=target.created_at,
+        updated_at=target.updated_at,
+    )
 
 
 class ExecutionTargetService:
@@ -58,6 +82,7 @@ class ExecutionTargetService:
             port=data.port,
             username=data.username,
             ssh_key_path=data.ssh_key_path,
+            ssh_password=data.ssh_password,
             docker_image=data.docker_image,
             is_default=data.is_default,
         )
@@ -80,6 +105,7 @@ class ExecutionTargetService:
         for key, value in payload.items():
             setattr(target, key, value)
         await db.flush()
+        await db.refresh(target)
         return target
 
     @staticmethod
@@ -106,9 +132,10 @@ class ExecutionTargetService:
             try:
                 with socket.create_connection((target.host, target.port), timeout=5):
                     pass
-                return True, f"SSH host reachable: {target.username}@{target.host}:{target.port}"
-            except OSError as e:
-                return False, f"Cannot reach {target.host}:{target.port} — {e}"
+                WorkspaceService._run_ssh(target, "echo ok")
+                return True, f"SSH connected: {target.username}@{target.host}:{target.port}"
+            except (OSError, WorkspaceError) as e:
+                return False, f"SSH failed for {target.username}@{target.host}:{target.port} — {e}"
 
         if target.target_type == ExecutionTargetType.DOCKER:
             if not target.docker_image:

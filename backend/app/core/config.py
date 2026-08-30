@@ -15,6 +15,10 @@ class Settings(BaseSettings):
 
     cors_origins: str = "http://localhost:3000"
     environment: str = "development"
+    workspaces_root: str = "/workspaces"
+    uploads_root: str = "/uploads"
+    orchestrator_enabled: bool = True
+    orchestrator_poll_seconds: int = 15
 
     @property
     def cors_origins_list(self) -> list[str]:

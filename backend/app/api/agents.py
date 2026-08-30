@@ -1,7 +1,7 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -20,7 +20,10 @@ async def hire_agent(
     membership: Annotated[object, Depends(get_org_membership)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
-    return await AgentService.create(db, org_id, data)
+    try:
+        return await AgentService.create(db, org_id, data)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
 
 
 @router.get("", response_model=list[AgentResponse])
@@ -28,8 +31,9 @@ async def list_agents(
     org_id: uuid.UUID,
     membership: Annotated[object, Depends(get_org_membership)],
     db: Annotated[AsyncSession, Depends(get_db)],
+    configured_only: bool = Query(default=True),
 ):
-    return await AgentService.list(db, org_id)
+    return await AgentService.list(db, org_id, configured_only=configured_only)
 
 
 @router.get("/{agent_id}", response_model=AgentResponse)
@@ -53,7 +57,10 @@ async def update_agent(
     membership: Annotated[object, Depends(get_org_membership)],
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
-    agent = await AgentService.update(db, org_id, agent_id, data)
+    try:
+        agent = await AgentService.update(db, org_id, agent_id, data)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
     if agent is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Agent not found")
     return agent
